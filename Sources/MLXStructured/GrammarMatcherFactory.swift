@@ -27,7 +27,7 @@ public extension GrammarMaskedLogitProcessor {
             configurations.tokenizerData
         )
         
-        let vocabSize = modelConfig.vocabSize.integer(or: 0)
+        let vocabSize = modelConfig?.vocabSize.integer() ?? 0
         var vocab = Array(repeating: "", count: vocabSize)
         
         for (key, value) in tokenizerData.model.vocab.dictionary(or: [:]) {

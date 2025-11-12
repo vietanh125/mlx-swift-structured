@@ -4,15 +4,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "MLXStructured",
+    name: "mlx-swift-structured",
     platforms: [.macOS(.v14), .iOS(.v16)],
-    products: [
-        .library(name: "MLXStructured", targets: ["MLXStructured"]),
-    ],
+    products: [.library(name: "MLXStructured", targets: ["MLXStructured"])],
     dependencies: [
         .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.25.6"),
-        .package(url: "https://github.com/ml-explore/mlx-swift-examples", from: "2.25.7"),
-        .package(url: "https://github.com/huggingface/swift-transformers", from: "0.1.24"),
+        .package(url: "https://github.com/ml-explore/mlx-swift-lm", from: "2.29.2"),
+        .package(url: "https://github.com/huggingface/swift-transformers", from: "1.1.0"),
         .package(url: "https://github.com/petrukha-ivan/swift-json-schema", from: "2.0.2"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.4.0"),
     ],
@@ -46,7 +44,7 @@ let package = Package(
             dependencies: [
                 .target(name: "CMLXStructured"),
                 .product(name: "MLX", package: "mlx-swift"),
-                .product(name: "MLXLMCommon", package: "mlx-swift-examples"),
+                .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
                 .product(name: "JSONSchema", package: "swift-json-schema")
             ]
         ),
@@ -55,7 +53,7 @@ let package = Package(
             name: "MLXStructuredCLI",
             dependencies: [
                 .target(name: "MLXStructured"),
-                .product(name: "MLXLLM", package: "mlx-swift-examples"),
+                .product(name: "MLXLLM", package: "mlx-swift-lm"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
         ),
@@ -64,7 +62,7 @@ let package = Package(
             name: "MLXStructuredTests",
             dependencies: [
                 .target(name: "MLXStructured"),
-                .product(name: "MLXLLM", package: "mlx-swift-examples"),
+                .product(name: "MLXLLM", package: "mlx-swift-lm"),
             ],
         ),
     ],
