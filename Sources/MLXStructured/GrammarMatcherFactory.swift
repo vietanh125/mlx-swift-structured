@@ -27,11 +27,25 @@ public extension GrammarMaskedLogitProcessor {
             configurations.tokenizerData
         )
         
-        let vocabSize = modelConfig?.vocabSize.integer() ?? 0
+        // Compute vocab size from both model config and actual tokenizer indices so we never
+        // index out of range when the tokenizer has more entries (e.g. added tokens) than
+        // modelConfig.vocabSize.
+        var maxIndex = modelConfig?.vocabSize.integer().map { $0 - 1 } ?? -1
+        for (_, value) in tokenizerData.model.vocab.dictionary(or: [:]) {
+            if let index = value.integer(), index > maxIndex {
+                maxIndex = index
+            }
+        }
+        for value in tokenizerData.addedTokens.array(or: []) {
+            if let index = value.id.integer(), index > maxIndex {
+                maxIndex = index
+            }
+        }
+        let vocabSize = max(maxIndex + 1, 1)
         var vocab = Array(repeating: "", count: vocabSize)
         
         for (key, value) in tokenizerData.model.vocab.dictionary(or: [:]) {
-            if let index = value.integer() {
+            if let index = value.integer(), vocab.indices.contains(index) {
                 vocab[index] = key.string
             }
         }

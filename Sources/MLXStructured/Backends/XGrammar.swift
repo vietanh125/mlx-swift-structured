@@ -149,7 +149,14 @@ extension XGrammar: GrammarMatcher {
         let bytes = bufferSize &<< 2
         let bitmaskData = UnsafeRawBufferPointer(start: bitmask.data, count: bytes)
         let bitmask = MLXArray(bitmaskData, [bytes], type: Int8.self)
-        let mask = bitmap[bitmask].reshaped([bytes * 8])[0..<vocabSize]
+        let expandedCount = bytes * 8
+        let safeCount = min(vocabSize, expandedCount)
+        let mask = bitmap[bitmask].reshaped([expandedCount])[0..<safeCount]
+        if safeCount < vocabSize {
+            // Pad with -inf so logits for extra positions are masked (defensive)
+            let pad = MLXArray([Float](repeating: -Float.infinity, count: vocabSize - safeCount))
+            return MLX.concatenated([mask, pad], axis: 0)
+        }
         return mask
     }
     
