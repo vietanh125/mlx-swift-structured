@@ -21,9 +21,35 @@ public func generate(
     grammar: Grammar,
     didGenerate: ([Int]) -> GenerateDisposition = { _ in .more }
 ) async throws -> GenerateResult {
+    return try await generate(
+        input: input,
+        cache: nil,
+        parameters: parameters,
+        context: context,
+        grammar: grammar,
+        didGenerate: didGenerate
+    )
+}
+
+public func generate(
+    input: LMInput,
+    cache: [KVCache]? = nil,
+    parameters: GenerateParameters = GenerateParameters(),
+    context: ModelContext,
+    grammar: Grammar,
+    didGenerate: ([Int]) -> GenerateDisposition = { _ in .more }
+) async throws -> GenerateResult {
     let sampler = parameters.sampler()
     let processor = try await GrammarMaskedLogitProcessor.from(configuration: context.configuration, grammar: grammar)
-    let iterator = try TokenIterator(input: input, model: context.model, processor: processor, sampler: sampler)
+    let iterator = try TokenIterator(
+        input: input,
+        model: context.model,
+        cache: cache,
+        processor: processor,
+        sampler: sampler,
+        prefillStepSize: parameters.prefillStepSize,
+        maxTokens: parameters.maxTokens
+    )
     let result = generate(input: input, context: context, iterator: iterator, didGenerate: didGenerate)
     return result
 }
