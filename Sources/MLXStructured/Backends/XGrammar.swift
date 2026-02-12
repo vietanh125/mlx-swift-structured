@@ -161,6 +161,10 @@ extension XGrammar: GrammarMatcher {
     }
     
     func advance(token: MLXArray) {
+
+        // Skip if grammar already terminated (stop token accepted).
+        // Prevents C++ warning from AcceptToken on terminated matcher.
+        if grammar_matcher_is_terminated(grammarMatcher) { return }
         let tokenID = token.item(Int32.self)
         let accepted = grammar_matcher_accept_token(grammarMatcher, tokenID)
         if !accepted {

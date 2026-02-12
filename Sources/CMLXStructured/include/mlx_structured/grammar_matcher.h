@@ -20,6 +20,8 @@ bool grammar_matcher_accept_token(
     int32_t token_id
 );
 
+bool grammar_matcher_is_terminated(void* grammar_matcher);
+
 void grammar_matcher_reset(void* grammar_matcher);
 
 void grammar_matcher_free(void* grammar_matcher);

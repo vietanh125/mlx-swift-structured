@@ -43,6 +43,18 @@ extern "C" bool grammar_matcher_accept_token(
     }
 }
 
+extern "C" bool grammar_matcher_is_terminated(void* grammar_matcher) {
+    try {
+        auto* grammar_matcher_ptr = static_cast<GrammarMatcher*>(grammar_matcher);
+        return grammar_matcher_ptr->IsTerminated();
+    } catch (const std::exception& e) {
+        catch_error(e.what());
+        return false;
+    }
+}
+
+
+
 extern "C" void grammar_matcher_reset(void* grammar_matcher) {
     try {
         auto* grammar_matcher_ptr = static_cast<GrammarMatcher*>(grammar_matcher);
