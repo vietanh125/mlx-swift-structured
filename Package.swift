@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "mlx-swift-structured",
-    platforms: [.macOS(.v14), .iOS(.v16)],
+    platforms: [.macOS(.v14), .iOS(.v17)],
     products: [.library(name: "MLXStructured", targets: ["MLXStructured"])],
     dependencies: [
         .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.25.6"),
