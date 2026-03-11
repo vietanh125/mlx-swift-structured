@@ -57,6 +57,13 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
         ),
+        .executableTarget(
+            name: "MLXStructuredBenchmark",
+            dependencies: [
+                .target(name: "CMLXStructured"),
+                .product(name: "JSONSchema", package: "swift-json-schema"),
+            ]
+        ),
         // Unit tests
         .testTarget(
             name: "MLXStructuredTests",
