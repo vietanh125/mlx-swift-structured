@@ -61,7 +61,7 @@ extern "C" void grammar_matcher_reset(void* grammar_matcher) {
         grammar_matcher_ptr->Reset();
     } catch (const std::exception& e) {
         catch_error(e.what());
-        return false;
+        return;
     }
 }
 
