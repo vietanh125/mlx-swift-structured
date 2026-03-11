@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,7 +16,19 @@ bool grammar_matcher_fill_next_token_bitmask(
     void* next_token_bitmask
 );
 
+bool grammar_matcher_fill_next_token_dense_mask(
+    void* grammar_matcher,
+    void* next_token_bitmask,
+    float* next_token_dense_mask,
+    size_t next_token_dense_mask_len
+);
+
 bool grammar_matcher_accept_token(
+    void* grammar_matcher,
+    int32_t token_id
+);
+
+int8_t grammar_matcher_accept_token_status(
     void* grammar_matcher,
     int32_t token_id
 );

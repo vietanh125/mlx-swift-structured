@@ -47,8 +47,8 @@ final class XGrammar {
             
     private let vocabSize: Int
     private let bufferSize: Int
-    private let bitmap: MLXArray
     private var bitmask: DLTensor
+    private var denseMask: [Float]
     private let grammarMatcher: UnsafeMutableRawPointer?
     
     init(
@@ -111,21 +111,14 @@ final class XGrammar {
             throw XGrammarError.invalidGrammar(XGrammar.lastErrorMessage)
         }
         
-        var bitmap = [Float](repeating: 0, count: 256 * 8)
-        for b in 0..<256 {
-            for k in 0..<8 {
-                bitmap[b * 8 + k] = ((b >> k) & 1) == 1 ? 0 : -Float.infinity
-            }
-        }
-        
         guard let grammarMatcher = grammar_matcher_new(compiledGrammar) else {
             throw XGrammarError.unknown(XGrammar.lastErrorMessage)
         }
         
         self.vocabSize = vocab.count
         self.bufferSize = (vocab.count + 31) / 32
-        self.bitmap = MLXArray(bitmap).reshaped([256, 8])
         self.bitmask = DLTensor.nextTokenBitmask(bufferSize: bufferSize)
+        self.denseMask = [Float](repeating: -.infinity, count: vocab.count)
         self.grammarMatcher = grammarMatcher
     }
     
@@ -140,34 +133,26 @@ final class XGrammar {
 extension XGrammar: GrammarMatcher {
     
     func nextTokenMask() -> MLXArray {
-        guard withUnsafeMutablePointer(to: &bitmask, {
-            grammar_matcher_fill_next_token_bitmask(grammarMatcher, $0)
-        }) else {
+        let didFillMask = withUnsafeMutablePointer(to: &bitmask) { bitmaskPointer in
+            denseMask.withUnsafeMutableBufferPointer { denseMaskPointer in
+                grammar_matcher_fill_next_token_dense_mask(
+                    grammarMatcher,
+                    bitmaskPointer,
+                    denseMaskPointer.baseAddress,
+                    denseMaskPointer.count
+                )
+            }
+        }
+        guard didFillMask else {
             return MLXArray.zeros([vocabSize])
         }
-        
-        let bytes = bufferSize &<< 2
-        let bitmaskData = UnsafeRawBufferPointer(start: bitmask.data, count: bytes)
-        let bitmask = MLXArray(bitmaskData, [bytes], type: Int8.self)
-        let expandedCount = bytes * 8
-        let safeCount = min(vocabSize, expandedCount)
-        let mask = bitmap[bitmask].reshaped([expandedCount])[0..<safeCount]
-        if safeCount < vocabSize {
-            // Pad with -inf so logits for extra positions are masked (defensive)
-            let pad = MLXArray([Float](repeating: -Float.infinity, count: vocabSize - safeCount))
-            return MLX.concatenated([mask, pad], axis: 0)
-        }
-        return mask
+        return MLXArray(denseMask)
     }
     
     func advance(token: MLXArray) {
-
-        // Skip if grammar already terminated (stop token accepted).
-        // Prevents C++ warning from AcceptToken on terminated matcher.
-        if grammar_matcher_is_terminated(grammarMatcher) { return }
         let tokenID = token.item(Int32.self)
-        let accepted = grammar_matcher_accept_token(grammarMatcher, tokenID)
-        if !accepted {
+        let status = grammar_matcher_accept_token_status(grammarMatcher, tokenID)
+        if status == 0 {
             reset()
         }
     }
