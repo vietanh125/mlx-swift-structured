@@ -9,7 +9,7 @@ let package = Package(
     products: [.library(name: "MLXStructured", targets: ["MLXStructured"])],
     dependencies: [
         .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.25.6"),
-        .package(url: "https://github.com/ml-explore/mlx-swift-lm", from: "2.29.2"),
+        .package(url: "https://github.com/vietanh125/mlx-swift-lm", branch: "fix/gemma4-audio"),
         .package(url: "https://github.com/huggingface/swift-transformers", from: "1.1.0"),
         .package(url: "https://github.com/petrukha-ivan/swift-json-schema", from: "2.0.2"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.4.0"),
