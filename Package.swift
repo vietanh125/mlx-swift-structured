@@ -9,7 +9,12 @@ let package = Package(
     products: [.library(name: "MLXStructured", targets: ["MLXStructured"])],
     dependencies: [
         .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.25.6"),
-        .package(url: "https://github.com/ml-explore/mlx-swift-lm", from: "2.29.2"),
+        // Re-pinned to the same fork the top-level Scribion `Package.swift`
+        // uses. SwiftPM matches packages by identity (`mlx-swift-lm`), so the
+        // top-level pin wins; the URL here just needs to point somewhere that
+        // satisfies the resolver. Branch instead of version since the fork
+        // tags with llama.cpp-style names that don't parse as semver.
+        .package(url: "https://github.com/vietanh125/mlx-swift-lm", branch: "main"),
         .package(url: "https://github.com/huggingface/swift-transformers", from: "1.1.0"),
         .package(url: "https://github.com/petrukha-ivan/swift-json-schema", from: "2.0.2"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.4.0"),
@@ -45,7 +50,8 @@ let package = Package(
                 .target(name: "CMLXStructured"),
                 .product(name: "MLX", package: "mlx-swift"),
                 .product(name: "MLXLMCommon", package: "mlx-swift-lm"),
-                .product(name: "JSONSchema", package: "swift-json-schema")
+                .product(name: "JSONSchema", package: "swift-json-schema"),
+                .product(name: "Hub", package: "swift-transformers"),
             ]
         ),
         // CLI for testing
