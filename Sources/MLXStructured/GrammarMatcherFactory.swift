@@ -9,6 +9,14 @@ import MLXLMCommon
 import Hub
 
 public extension GrammarMaskedLogitProcessor {
+    // Workaround: Swift 6.2 OSSA CopyPropagation crashes on this function's
+    // dense chained Config accesses (`.integer()`, `.string()`, `.array()`,
+    // `.dictionary()`) under -O. Ownership verifier fires
+    // "Found outside of lifetime use?!" then "Found ownership error?!"
+    // and swift-frontend hits llvm::report_fatal_error.
+    // This is a one-shot setup call (per processor), so opting out of
+    // optimization here is a no-op for runtime performance.
+    @_optimize(none)
     static func from(
         hub: HubApi = .shared, // TODO: Request changes in swift-transformers to make the tokenizer vocab (and some other properties) public
         configuration: ModelConfiguration,
